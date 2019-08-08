@@ -56,3 +56,8 @@ $ lb4 datasource
   - password:
   - database: **users**
   - Feature supported by MongoDB v3.1.0 and above: **Yes**
+
+##### 4. Crear el repositorio
+  - Please select the datasource **DbDatasource**
+  - Select the model(s) you want to generate a repository **User**
+  - Please select the repository base class **DefaultCrudRepository** (Legacy juggler bridge)
