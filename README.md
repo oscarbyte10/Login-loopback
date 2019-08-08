@@ -127,3 +127,39 @@ async handle(context: RequestContext) {
   }
 }
 ```
+##### 8. Creamos la estrategia de autenticación
+Primero, instalamos el módulo bcryptjs
+```
+$ npm i --s bcryptjs
+$ npm i --s @types/bcryptjs
+```
+
+Después, instalamos el módulo jsonwebtoken
+```
+$ npm i --s jsonwebtoken
+```
+
+Después, copiaremos el archivo **keys.ts** que se encuentra en **/src**
+
+Cosas a destacar de este archivo son las constantes:
+  - *TOKEN_SECRET_VALUE*: valor que va introducido dentro del token
+  - *TOKEN_EXPIRES*: valor en tiempo hasta que el token deje de ser válido
+
+A continuación, en el repositorio user **/src/repositories/user.repository.ts** añade el siguiente objeto fuera de la clase:
+```
+export type Credentials = {
+ email: string;
+ password: string;
+};
+```
+Una vez creadas las keys, necesitaremos un hasher que utilice un algoritmo que convierta el texto plano y lo introduzca como hash en la base de datos.
+Para ello, crearemos el directorio **/src/services** y dentro copiaremos el archivo **hash.password.bcryptjs.ts** que se encuentra en este mismo repositorio.
+
+Ahora pasaremos a definir la estrategia de autenticación, que en este caso hemos elegido JWT.
+Crearemos la carpeta **/src/authentication-strategies/** y dentro de ella copiaremos el archivo **/jwt-strategy.ts**
+
+Y para acabar, solo nos queda registrar la estrategia de autenticación en el constructor de **/src/application.ts**:
+```
+registerAuthenticationStrategy(this, JWTAuthenticationStrategy);
+};
+```

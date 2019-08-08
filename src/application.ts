@@ -1,3 +1,4 @@
+import { JWTAuthenticationStrategy } from './authentication-strategies/jwt-strategy';
 import { BootMixin } from '@loopback/boot';
 import { ApplicationConfig } from '@loopback/core';
 import {
@@ -9,7 +10,7 @@ import { RestApplication } from '@loopback/rest';
 import { ServiceMixin } from '@loopback/service-proxy';
 import * as path from 'path';
 import { MySequence } from './sequence';
-import { AuthenticationComponent } from '@loopback/authentication';
+import { AuthenticationComponent, registerAuthenticationStrategy } from '@loopback/authentication';
 
 export class LoginApplication extends BootMixin(
   ServiceMixin(RepositoryMixin(RestApplication)),
@@ -29,6 +30,7 @@ export class LoginApplication extends BootMixin(
     });
     this.component(RestExplorerComponent);
     this.component(AuthenticationComponent);
+    registerAuthenticationStrategy(this, JWTAuthenticationStrategy);
 
     this.projectRoot = __dirname;
     // Customize @loopback/boot Booter Conventions here
