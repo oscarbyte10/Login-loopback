@@ -1,5 +1,5 @@
 import { Credentials } from './../repositories/user.repository';
-import { USER_SERVICE, UserServiceBindings } from './../keys';
+import { UserServiceBindings } from './../keys';
 import {
   Count,
   CountSchema,
@@ -25,6 +25,7 @@ import { inject } from '@loopback/core';
 import { PasswordHasherBindings, TokenServiceBindings } from '../keys';
 import { PasswordHasher } from '../services/hash.password.bcryptjs';
 import { TokenService, UserService } from '@loopback/authentication';
+import { CredentialsRequestBody } from './specs/user-controller.specs';
 
 export class UserController {
   constructor(
@@ -163,4 +164,40 @@ export class UserController {
   async deleteById(@param.path.string('id') id: string): Promise<void> {
     await this.userRepository.deleteById(id);
   }
+
+  @post('/users/login', {
+    responses: {
+      '200': {
+        description: 'Token',
+        content: {
+          'application/json': {
+            schema: {
+              type: 'object',
+              properties: {
+                token: {
+                  type: 'string',
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  async login(
+    @requestBody(CredentialsRequestBody) credentials: Credentials,
+  ): Promise<{ token: string }> {
+    // ensure the user exists, and the password is correct
+    const user = await this.userService.verifyCredentials(credentials);
+
+    // convert a User object into a UserProfile object (reduced set of properties)
+    const userProfile = this.userService.convertToUserProfile(user);
+
+    // create a JSON Web Token based on the user profile
+    const token = await this.jwtService.generateToken(userProfile);
+
+    return { token };
+  }
+
+
 }

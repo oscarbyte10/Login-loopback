@@ -220,3 +220,46 @@ Y después sustituiremos la petición *@post/users* por esta:
    return savedUser;
  }
 ```
+
+
+#### 12. Creamos el login
+Creamos la carpeta **/src/controllers/specs/** y dentro copiamos el archivo **user-controller.specs.ts**.
+
+Una vez tenemos las constantes declaradas que nos interesan para poder transformar los datos introducidos por el usuario, nos dirigimos al archivo **/src/controllers/user.controller.ts** y allí introducimos la petición post del login:
+
+```
+@post('/users/login', {
+   responses: {
+     '200': {
+       description: 'Token',
+       content: {
+         'application/json': {
+           schema: {
+             type: 'object',
+             properties: {
+               token: {
+                 type: 'string',
+               },
+             },
+           },
+         },
+       },
+     },
+   },
+ })
+ async login(
+   @requestBody(CredentialsRequestBody) credentials: Credentials,
+ ): Promise<{ token: string }> {
+   // ensure the user exists, and the password is correct
+   const user = await this.userService.verifyCredentials(credentials);
+
+   // convert a User object into a UserProfile object (reduced set of properties)
+   const userProfile = this.userService.convertToUserProfile(user);
+
+   // create a JSON Web Token based on the user profile
+   const token = await this.jwtService.generateToken(userProfile);
+
+   return { token };
+ }
+
+```
