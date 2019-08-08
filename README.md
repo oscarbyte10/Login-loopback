@@ -192,3 +192,31 @@ this.bind(PasswordHasherBindings.ROUNDS).to(10);
 this.bind(PasswordHasherBindings.PASSWORD_HASHER).toClass(BcryptHasher);
 this.bind(UserServiceBindings.USER_SERVICE).toClass(MyUserService);
 ```
+
+#### 11. Añadir usuarios con la petición POST
+En el archivo **/src/controllers/user.controller.ts** editaremos la petición POST para añadir usuarios, pero antes añadiremos al constructor:
+```
+@inject(PasswordHasherBindings.PASSWORD_HASHER)
+public passwordHasher: PasswordHasher,
+@inject(TokenServiceBindings.TOKEN_SERVICE)
+public jwtService: TokenService,
+@inject(UserServiceBindings.USER_SERVICE)
+public userService: UserService<User, Credentials>
+```
+
+Y después sustituiremos la petición *@post/users* por esta:
+
+```
+@post('/users')
+ async create(@requestBody() user: User): Promise<User> {
+
+   // encrypt the password
+   user.password = await this.passwordHasher.hashPassword(user.password);
+
+   // create the new user
+   const savedUser = await this.userRepository.create(user);
+   delete savedUser.password;
+
+   return savedUser;
+ }
+```

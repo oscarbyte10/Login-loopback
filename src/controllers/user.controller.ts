@@ -1,3 +1,5 @@
+import { Credentials } from './../repositories/user.repository';
+import { USER_SERVICE, UserServiceBindings } from './../keys';
 import {
   Count,
   CountSchema,
@@ -19,33 +21,36 @@ import {
 } from '@loopback/rest';
 import {User} from '../models';
 import {UserRepository} from '../repositories';
+import { inject } from '@loopback/core';
+import { PasswordHasherBindings, TokenServiceBindings } from '../keys';
+import { PasswordHasher } from '../services/hash.password.bcryptjs';
+import { TokenService, UserService } from '@loopback/authentication';
 
 export class UserController {
   constructor(
     @repository(UserRepository)
     public userRepository : UserRepository,
+    @inject(PasswordHasherBindings.PASSWORD_HASHER)
+    public passwordHasher: PasswordHasher,
+    @inject(TokenServiceBindings.TOKEN_SERVICE)
+    public jwtService: TokenService,
+    @inject(UserServiceBindings.USER_SERVICE)
+    public userService: UserService<User, Credentials>
   ) {}
 
-  @post('/users', {
-    responses: {
-      '200': {
-        description: 'User model instance',
-        content: {'application/json': {schema: getModelSchemaRef(User)}},
-      },
-    },
-  })
-  async create(
-    @requestBody({
-      content: {
-        'application/json': {
-          schema: getModelSchemaRef(User, {exclude: ['id']}),
-        },
-      },
-    })
-    user: Omit<User, 'id'>,
-  ): Promise<User> {
-    return this.userRepository.create(user);
-  }
+  @post('/users')
+ async create(@requestBody() user: User): Promise<User> {
+
+   // encrypt the password
+   user.password = await this.passwordHasher.hashPassword(user.password);
+
+   // create the new user
+   const savedUser = await this.userRepository.create(user);
+   delete savedUser.password;
+
+   return savedUser;
+ }
+
 
   @get('/users/count', {
     responses: {
