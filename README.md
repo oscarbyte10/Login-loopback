@@ -78,3 +78,52 @@ $ lb4 controller
   - What is the name of ID property? **id**
   - What is the type of your ID? **string**
   - What is the base HTTP path name of the CRUD operations? **/users**
+
+##### 6. Instalamos el módulo authentication
+```sh
+$ npm i --s @loopback/authentication
+```
+##### 7. Añadimos el módulo a la aplicación
+En el archivo **src/application.ts**
+
+Importamos el componente Authentication:
+```
+import { AuthenticationComponent } from '@loopback/authentication';
+```
+Y dentro del constructor lo añadimos:
+```
+this.component(AuthenticationComponent);
+```
+
+##### 8. Añadimos la acción de authenticate a la secuencia de la aplicación
+En **src/sequence.ts** añadimos al constructor:
+```
+@inject(AuthenticationBindings.AUTH_ACTION) protected authenticateRequest: AuthenticateFn
+```
+Y después llamamos a la acción de authentication y lanzamos error en caso de que existas
+
+```
+async handle(context: RequestContext) {
+  try {
+    const { request, response } = context;
+    const route = this.findRoute(request);
+
+    //call authentication action
+    await this.authenticateRequest(request);
+
+    //Authentication successfull, proceed to invoke controller
+    const args = await this.parseParams(request, route);
+    const result = await this.invoke(route, args);
+    this.send(response, result);
+  } catch (err) {
+    if (
+      err.code === AUTHENTICATION_STRATEGY_NOT_FOUND ||
+      err.code === USER_PROFILE_NOT_FOUND
+    ) {
+      Object.assign(err, { statusCode: 401 });
+      }
+    this.reject(context, err);
+    return;
+  }
+}
+```
