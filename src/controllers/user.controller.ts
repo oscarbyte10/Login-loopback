@@ -24,7 +24,7 @@ import {UserRepository} from '../repositories';
 import { inject } from '@loopback/core';
 import { PasswordHasherBindings, TokenServiceBindings } from '../keys';
 import { PasswordHasher } from '../services/hash.password.bcryptjs';
-import { TokenService, UserService } from '@loopback/authentication';
+import { TokenService, UserService, authenticate, AuthenticationBindings, UserProfile } from '@loopback/authentication';
 import { CredentialsRequestBody } from './specs/user-controller.specs';
 
 export class UserController {
@@ -199,5 +199,22 @@ export class UserController {
     return { token };
   }
 
-
+  @get('/users/me', {
+    responses: {
+      '200': {
+        description: 'The current user profile',
+        content: {
+          'application/json': {
+          },
+        },
+      },
+    },
+  })
+  @authenticate('jwt')
+  async printCurrentUser(
+    @inject(AuthenticationBindings.CURRENT_USER)
+    currentUserProfile: UserProfile,
+  ): Promise<UserProfile> {
+    return currentUserProfile;
+  }
 }

@@ -2,7 +2,7 @@
 Aplicación backend desarrollada con el framework Loopback 4 para el login de usuarios utilizando la estrategia de autenticación JSON Web Token.
 [![LoopBack](https://github.com/strongloop/loopback-next/raw/master/docs/site/imgs/branding/Powered-by-LoopBack-Badge-(blue)-@2x.png)](http://loopback.io/)
 
-#### 1. Crear el proyecto desde Loopback
+### 1. Crear el proyecto desde Loopback
 Instalar las dependencias desde lb4
 ```sh
 $ lb4 app
@@ -12,7 +12,7 @@ $ lb4 app
   - App class name: **LoginApplication**
   - Select features to enable in the project: () *Enable docker*
 
-#### 2. Crear el modelo User
+### 2. Crear el modelo User
 Crear el modelo con los atributos que tendrá el usuario.
 ```sh
 $ lb4 model
@@ -43,7 +43,7 @@ $ lb4 model
   - Property type: **string**
   - Is it required?: **Yes**
 
-#### 3. Crear la database
+### 3. Crear la database
 Crear la fuente de la base de datos de MongoDB
 ```sh
 $ lb4 datasource
@@ -57,7 +57,7 @@ $ lb4 datasource
   - database: **users**
   - Feature supported by MongoDB v3.1.0 and above: **Yes**
 
-#### 4. Crear el repositorio
+### 4. Crear el repositorio
 Crear el repositorio del modelo user utilizando la base de datos
 que se ha creado en el paso anterior
 ```sh
@@ -67,7 +67,7 @@ $ lb4 repository
   - Select the model(s) you want to generate a repository **User**
   - Please select the repository base class **DefaultCrudRepository** (Legacy juggler bridge)
 
-#### 5. Crear el controlador
+### 5. Crear el controlador
 Crear el controlador para la base de las operaciones CRUD
 ```sh
 $ lb4 controller
@@ -79,11 +79,11 @@ $ lb4 controller
   - What is the type of your ID? **string**
   - What is the base HTTP path name of the CRUD operations? **/users**
 
-#### 6. Instalamos el módulo authentication
+### 6. Instalamos el módulo authentication
 ```sh
 $ npm i --s @loopback/authentication
 ```
-#### 7. Añadimos el módulo a la aplicación
+### 7. Añadimos el módulo a la aplicación
 En el archivo **src/application.ts**
 
 Importamos el componente Authentication:
@@ -95,7 +95,7 @@ Y dentro del constructor lo añadimos:
 this.component(AuthenticationComponent);
 ```
 
-#### 8. Añadimos la acción de authenticate a la secuencia de la aplicación
+### 8. Añadimos la acción de authenticate a la secuencia de la aplicación
 En **src/sequence.ts** añadimos al constructor:
 ```
 @inject(AuthenticationBindings.AUTH_ACTION) protected authenticateRequest: AuthenticateFn
@@ -127,7 +127,7 @@ async handle(context: RequestContext) {
   }
 }
 ```
-#### 9. Creamos la estrategia de autenticación
+### 9. Creamos la estrategia de autenticación
 Primero, instalamos el módulo bcryptjs
 ```
 $ npm i --s bcryptjs
@@ -162,7 +162,7 @@ Y para acabar, solo nos queda registrar la estrategia de autenticación en el co
 ```
 registerAuthenticationStrategy(this, JWTAuthenticationStrategy);
 ```
-#### 10. TokenService y UserService
+### 10. TokenService y UserService
 Creamos el servicio JWTService para poder enviar el token.
 Dentro de **src/services** copiamos el archivo **jwt-service.ts**
 
@@ -193,7 +193,7 @@ this.bind(PasswordHasherBindings.PASSWORD_HASHER).toClass(BcryptHasher);
 this.bind(UserServiceBindings.USER_SERVICE).toClass(MyUserService);
 ```
 
-#### 11. Añadir usuarios con la petición POST
+### 11. Añadir usuarios con la petición POST
 En el archivo **/src/controllers/user.controller.ts** editaremos la petición POST para añadir usuarios, pero antes añadiremos al constructor:
 ```
 @inject(PasswordHasherBindings.PASSWORD_HASHER)
@@ -222,7 +222,7 @@ Y después sustituiremos la petición *@post/users* por esta:
 ```
 
 
-#### 12. Creamos el login
+### 12. Creamos el login
 Creamos la carpeta **/src/controllers/specs/** y dentro copiamos el archivo **user-controller.specs.ts**.
 
 Una vez tenemos las constantes declaradas que nos interesan para poder transformar los datos introducidos por el usuario, nos dirigimos al archivo **/src/controllers/user.controller.ts** y allí introducimos la petición post del login:
@@ -262,4 +262,31 @@ Una vez tenemos las constantes declaradas que nos interesan para poder transform
    return { token };
  }
 
+```
+
+### 13. Asegurar un endpoint con el decorador @authenticate
+Este controlador servirá para utilizar el decorador @authenticate y que el usuario deba estar en posesión de un token válido para poder acceder al recurso.
+
+A continuación, vamos a asegurar un endpoint GET para que cuando el usuario acceda a */users/me* y cuando el servidor compruebe que está autenticado se ejecutará *printCurrentUser()*.
+
+Añadiremos el siguiente código a **/src/controlers/user.controller.ts**
+```
+@get('/users/me', {
+   responses: {
+     '200': {
+       description: 'The current user profile',
+       content: {
+         'application/json': {
+         },
+       },
+     },
+   },
+ })
+ @authenticate('jwt')
+ async printCurrentUser(
+   @inject(AuthenticationBindings.CURRENT_USER)
+   currentUserProfile: UserProfile,
+ ): Promise<UserProfile> {
+   return currentUserProfile;
+ }
 ```
