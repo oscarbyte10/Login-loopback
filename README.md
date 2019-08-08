@@ -42,3 +42,17 @@ $ lb4 model
   - Enter the property name: **lastName**
   - Property type: **string**
   - Is it required?: **Yes**
+
+##### 3. Crear la database
+Crear la fuente de la base de datos de MongoDB
+```sh
+$ lb4 datasource
+```
+  - Datasource name: **db**
+  - Select the connector for db: **MongoDB**
+  - host: **localhost**
+  - port: **27017**
+  - user:
+  - password:
+  - database: **users**
+  - Feature supported by MongoDB v3.1.0 and above: **Yes**
