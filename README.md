@@ -58,6 +58,23 @@ $ lb4 datasource
   - Feature supported by MongoDB v3.1.0 and above: **Yes**
 
 ##### 4. Crear el repositorio
+Crear el repositorio del modelo user utilizando la base de datos
+que se ha creado en el paso anterior
+```sh
+$ lb4 repository
+```
   - Please select the datasource **DbDatasource**
   - Select the model(s) you want to generate a repository **User**
   - Please select the repository base class **DefaultCrudRepository** (Legacy juggler bridge)
+
+##### 5. Crear el controlador
+Crear el controlador para la base de las operaciones CRUD
+```sh
+$ lb4 controller
+```
+  - Controller class name: **user**
+  - What kind of controller would you like to generate? **REST Controller with CRUD functions**
+  - What is the name of your CRUD repository? **UserRepository**
+  - What is the name of ID property? **id**
+  - What is the type of your ID? **string**
+  - What is the base HTTP path name of the CRUD operations? **/users**
